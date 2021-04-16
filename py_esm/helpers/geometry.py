@@ -1,5 +1,6 @@
 from collections import Counter
 
+
 def sort_bend_angle(atoms):
     """
     :param atoms: list of two bonds shared by a central atom
@@ -18,6 +19,7 @@ def sort_bend_angle(atoms):
     atom_list.pop(center_idx[0])
 
     return [atom_list[0], center, atom_list[1]]
+
 
 def sort_torsion_bonds(bond1, bond2, bond3):
     """

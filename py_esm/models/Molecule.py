@@ -8,6 +8,7 @@ import functools
 
 from py_esm.helpers.geometry import sort_bend_angle_atoms, sort_torsion_bonds, sort_bend_angle
 from py_esm.models.Atom import Atom
+from py_esm.utils.elements import element_dict
 
 ob.obErrorLog.StopLogging()
 
@@ -97,6 +98,16 @@ class Molecule:
         smiles = Chem.MolToSmiles(mol)
         return cls(smiles)
 
+    def set_atom_positions(self, atoms, positions):
+        """
+        converts angstrom to bohr as well
+        :param atoms: indices
+        :param positions: positions
+        :return:
+        """
+        for atom in atoms:
+            self.atoms[atom].coordinates = np.array([p / 0.52917721092 for p in positions[atom]])
+
     @property
     def n_electrons(self):
         """
@@ -107,6 +118,19 @@ class Molecule:
             n += atom.atom
 
         return n
+
+    @property
+    def e_nuc_repulsion(self):
+        """
+        Calculates the classical nuclear repulsion energy
+        :return: nuclear repulsion energy
+        """
+        e_nuc = 0
+        for a in self.atoms:
+            for b in self.atoms:
+                if a != b:
+                    e_nuc += (a.charge * b.charge) / np.linalg.norm(a.coordinates - b.coordinates)
+        return 0.5 * e_nuc
 
     @functools.lru_cache(maxsize=None)
     def get_nbonds(self, index):
@@ -153,13 +177,10 @@ class Molecule:
         :return: array of alike angles
         """
         angles = []
-        match = True
         for a in self.angles:
-            for i in range(3):
-                if self.atoms[a[i]].atom != angle[i]:
-                    match = False
-
-            if match:
+            if [self.atoms[i].atom for i in a] != angle:
+                continue
+            else:
                 angles.append(a)
 
         return angles
@@ -278,6 +299,7 @@ class Molecule:
         Sets a certain geometry on the molecule object
         :param value: value the degree of freedom should take
         :param dof: the degree of freedom to set it's value to
+        -> when settings an angle enter the value in radians
         """
 
         if len(dof) > 3:
@@ -300,8 +322,6 @@ class Molecule:
                     rij = self.norm_dist_vec([b[1], b[0]])
                     self.atoms[atom].coordinates -= offset * rij
 
-                R = self.get_bond_length(b)
-
         # bend angles
         elif len(dof) == 3:
             # gather all affected angles
@@ -312,21 +332,20 @@ class Molecule:
                 # sort the angle array
                 a = sort_bend_angle_atoms(a, [self.get_bonds(i) for i in a])
 
-                theta = self.get_bend_angle(a)
-                diff = value - theta
+                theta = self.get_bend_angle(a) * np.pi / 180
+                diff = (value - theta) / 2
 
-                r1 = self.atoms[a[0]].coordinates - self.atoms[a[1]].coordinates
-                r2 = self.atoms[a[2]].coordinates - self.atoms[a[1]].coordinates
+                r1 = (self.atoms[a[0]].coordinates - self.atoms[a[1]].coordinates) / self.get_bond_length([a[0], a[1]])
+                r2 = (self.atoms[a[2]].coordinates - self.atoms[a[1]].coordinates) / self.get_bond_length([a[2], a[1]])
                 norm_vec = np.cross(r1, r2)
-                norm_vec /= (np.linalg.norm(norm_vec) + 1e-05)
+                norm_vec /= np.linalg.norm(norm_vec)
 
                 for atom in self.iterate_atoms(a[0], [(a[0], a[1])]):
-                    rotation_vector = diff / 2 * norm_vec
+                    rotation_vector = - diff * norm_vec
                     rotation = rot.from_rotvec(rotation_vector)
                     self.atoms[atom].coordinates = rotation.apply(self.atoms[atom].coordinates)
 
                 for atom in self.iterate_atoms(a[2], [(a[1], a[2])]):
-
-                    rotation_vector = - diff / 2 * norm_vec
+                    rotation_vector = diff * norm_vec
                     rotation = rot.from_rotvec(rotation_vector)
                     self.atoms[atom].coordinates = rotation.apply(self.atoms[atom].coordinates)

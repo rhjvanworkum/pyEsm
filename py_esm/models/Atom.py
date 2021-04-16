@@ -18,4 +18,4 @@ class Atom:
         self.atom_symbol = elements.get_element_symbol(atom)
 
         self.coordinates = linalg.list_to_array(coordinates)
-        self.q = 0
+        self.charge = atom
