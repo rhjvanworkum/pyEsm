@@ -40,6 +40,8 @@ def run_hf(N, basis, e_nuc, n_scf, calculator=None):
 
     for n in range(n_scf):
 
+        print('SCF cycle: ', n)
+
         Fock = np.zeros((B, B), dtype=np.float64)
         for i in range(B):
             for j in range(B):
@@ -64,5 +66,7 @@ def run_hf(N, basis, e_nuc, n_scf, calculator=None):
 
         if calculator:
             e_tot += calculator.calculate(evals)
+
+        print(e_tot)
 
     return evals, evecs, e_tot

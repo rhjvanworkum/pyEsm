@@ -8,10 +8,9 @@ import functools
 
 from py_esm.helpers.geometry import sort_bend_angle_atoms, sort_torsion_bonds, sort_bend_angle
 from py_esm.models.Atom import Atom
-from py_esm.utils.elements import element_dict
+from py_esm.utils.data import PySmilesCopy
 
 ob.obErrorLog.StopLogging()
-
 
 class Molecule:
     """
@@ -39,7 +38,10 @@ class Molecule:
         self.rd_mol = Chem.MolFromSmiles(smiles)
         self.rd_mol = Chem.AddHs(self.rd_mol)
 
-        self.pysmiles_mol = read_smiles(smiles, explicit_hydrogen=True)
+        try:
+            self.pysmiles_mol = read_smiles(smiles, explicit_hydrogen=True)
+        except ValueError:
+            self.pysmiles_mol = PySmilesCopy([0, 1, 1])
 
 
         # compositional section

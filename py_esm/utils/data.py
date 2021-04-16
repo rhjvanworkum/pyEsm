@@ -94,3 +94,12 @@ def print_sym_matrix(mat):
     for i in range(len(mat)):
         for j in range(0, i + 1):
             print(i + 1, j + 1, mat[i][j])
+
+
+class PySmilesCopy:
+
+    def __init__(self, bond):
+        self.bonds = [bond]
+
+    def edges(self, data):
+        return self.bonds
