@@ -1,21 +1,21 @@
 import numpy as np
 
-from py_esm.models.basis_set.CgtoBasisSet import CgtoBasisSet
-from py_esm.models.methods.hartree_fock import run_hf
+from py_esm.models.methods.scf.HartreeFockProcedure import HartreeFockProcedure
 
 
-def mp2_mol(mol):
+def mp2_mol(mol, basis):
     """
     MP2 calculation on a molecule
     :param mol: Molecule Object
     :return: eigenvalues, eigenvectors and total energy of the system
     """
 
-    basis = CgtoBasisSet(mol, basis_set='sto-3g')
-    calculator = MP2EnergyCalculator(mol.n_electrons, basis.n_basis, basis.met)
-    (evals, evecs, energy) = run_hf(mol.n_electrons, basis, mol.e_nuc_repulsion, 25, calculator)
+    scf = HartreeFockProcedure(mol, basis)
+    scf.run_hf(25, False)
 
-    return evals, evecs, energy
+    calculator = MP2EnergyCalculator(mol.n_electrons, scf.basis.n_basis, scf.basis.met)
+
+    return scf.E, scf.C, (scf.energy + calculator.calculate(scf.E))
 
 
 class MP2EnergyCalculator():

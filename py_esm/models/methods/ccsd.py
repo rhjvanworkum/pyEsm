@@ -1,16 +1,17 @@
 import numpy as np
 
-from py_esm.models.basis_set.CgtoBasisSet import CgtoBasisSet
-from py_esm.models.methods.hartree_fock import run_hf
+from py_esm.models.methods.scf.HartreeFockProcedure import HartreeFockProcedure
 
 
-def ccsd_mol(mol):
+def ccsd_mol(mol, basis):
 
-    basis = CgtoBasisSet(mol, basis_set='sto-3g')
-    calculator = CCSDEnergyCalculator(mol.n_electrons, basis.n_basis, basis.met)
-    (evals, evecs, energy) = run_hf(mol.n_electrons, basis, mol.e_nuc_repulsion, 25, calculator)
+    scf = HartreeFockProcedure(mol, basis)
+    scf.run_hf(25, False)
 
-    return evals, evecs, energy
+    calculator = CCSDEnergyCalculator(mol.n_electrons, scf.basis.n_basis, scf.basis.met)
+
+    return scf.E, scf.C, (scf.energy + calculator.calculate(scf.E))
+
 
 # TODO: Test this class more carefully
 class CCSDEnergyCalculator():

@@ -19,6 +19,19 @@ class ContractedGaussianOrbital:
 
         self.normalize()
 
+
+    def __call__(self, x, y, z):
+        i, j, k = self.ang_mom
+        dx, dy, dz = x - self.origin[0], y - self.origin[1], z - self.origin[2]
+        d2 = dx ** 2 + dy ** 2 + dz ** 2
+
+        value = 0.0
+        for idx, coef in enumerate(self.coeffs):
+            value += self.norm[idx] * coef * dx ** i * dy ** j * dz ** k * np.exp(-self.exponents[idx] * d2)
+
+        return value
+
+
     def normalize(self):
         """
         Function to normalize all the basis_set functions in the object
@@ -51,8 +64,9 @@ class ContractedGaussianOrbital:
         N *= prefactor
         N = np.power(N, -0.5)
 
-        for a in range(self.n_gaussians):
-            self.coeffs[a] *= N
+        self.norm *= N
+        # for a in range(self.n_gaussians):
+        #     self.coeffs[a] *= N
 
 
 def E(a, b, i, j, t, Xab):

@@ -6,6 +6,7 @@ Test Module for the Post Hartree Fock methods with a CGTO basis_set set in the p
 import pytest
 
 from py_esm.models.Molecule import Molecule
+from py_esm.models.basis_set.CgtoBasisSet import CgtoBasisSet
 from py_esm.models.methods.ccsd import ccsd_mol
 from py_esm.models.methods.mp2 import mp2_mol
 
@@ -21,7 +22,9 @@ def test_mp2():
         ]
     )
 
-    evals, evecs, energy = mp2_mol(mol)
+    basis = CgtoBasisSet(mol)
+
+    evals, evecs, energy = mp2_mol(mol, basis)
 
     assert energy == pytest.approx(-75.006040, abs=5e-2)
 
@@ -36,6 +39,8 @@ def test_ccsd():
         ]
     )
 
-    evals, evecs, energy = ccsd_mol(mol)
+    basis = CgtoBasisSet(mol)
+
+    evals, evecs, energy = ccsd_mol(mol, basis)
 
     assert energy == pytest.approx(-1.151522, abs=5e-2)

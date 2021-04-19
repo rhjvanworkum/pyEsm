@@ -6,7 +6,7 @@ Test Module for the Hartree Fock procedure with a CGTO basis_set set in the py_e
 import pytest
 
 from py_esm.models.Molecule import Molecule
-from py_esm.models.methods.hartree_fock import run_hf
+from py_esm.models.methods.hartree_fock import hf_mol
 from py_esm.models.basis_set.CgtoBasisSet import CgtoBasisSet, PreComputedCgtoBasisSet
 
 
@@ -25,7 +25,7 @@ def test_scf_procedure():
 
     basis = PreComputedCgtoBasisSet(base_path + 's.dat', base_path + 't.dat', base_path + 'v.dat', base_path + 'eri.dat')
 
-    evals, evecs, energy = run_hf(mol.n_electrons, basis, mol.e_nuc_repulsion, 25)
+    evals, evecs, energy = hf_mol(mol, basis)
 
     assert energy == pytest.approx(-74.965901, abs=5e-2)
 
@@ -41,8 +41,10 @@ def test_hartree_fock_procedure():
         ]
     )
 
-    basis = CgtoBasisSet(mol, basis_set='sto-3g')
+    basis = CgtoBasisSet(mol)
 
-    evals, evecs, energy = run_hf(mol.n_electrons, basis, mol.e_nuc_repulsion, 25)
+    evals, evecs, energy = hf_mol(mol, basis)
 
     assert energy == pytest.approx(-74.965901, abs=5e-2)
+
+# TODO: write test for DIIS scf procedure
