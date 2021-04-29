@@ -79,6 +79,13 @@ class KohnShamProcedure:
             self.energy = self.nuc_energy + self.el_energy
 
             if np.linalg.norm(self.P - self.P_previous) < tol:
+                # calculate dipole moments
+                for i in range(3):
+                    self.basis.mu[i] = -2 * np.trace(np.dot(self.P, self.basis.M[i])) + \
+                                     sum([atom.charge * (atom.coordinates[i] -
+                                                         self.mol.center_of_charge[i]) for atom in self.mol.atoms])
+                self.basis.mu *= 2.541765
+
                 break
 
     def toOrthonormal(self, mat):
@@ -121,3 +128,23 @@ class KohnShamProcedure:
             F += weights[i] * fock
 
         return F
+
+
+    def solve_poisson_spectral(self, grid, rho):
+        """Solve the radial poisson equation for a spherically symmetric density."""
+        norm = grid.integrate(4 * np.pi * grid.points**2 * rho)
+
+        int1 = grid.antiderivative(grid.points * rho)
+        int1 -= int1[0]
+        int2 = grid.antiderivative(int1)
+        int2 -= int2[0]
+
+        v_h = -(4 * np.pi) * int2
+
+        alpha = (norm - v_h[-1]) / grid.points[-1]
+        v_h += alpha * grid.points
+        v_h /= grid.points
+
+        e_h = 0.5 * grid.integrate(v_h * rho * 4 * np.pi * grid.points ** 2)
+
+        return e_h, v_h

@@ -1,0 +1,11 @@
+name: pyEsmFinal
+dependencies:
+  - python=3.7.10
+  - pip:
+      - scipy
+      - numpy
+      - flask
+      - pysmiles
+      - gunicorn
+  - conda:
+      - openbabel

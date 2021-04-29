@@ -1,6 +1,7 @@
 from openbabel.pybel import readstring, ob
-from rdkit import Chem
-from rdkit.Chem.rdmolfiles import MolFragmentToSmarts
+# from rdkit import Chem
+# from rdkit.Chem import AllChem
+# from rdkit.Chem.rdmolfiles import MolFragmentToSmarts
 from pysmiles import read_smiles
 import numpy as np
 from scipy.spatial.transform import Rotation as rot
@@ -35,8 +36,10 @@ class Molecule:
 
         self.mol_formula = self.pybel_mol.formula
 
-        self.rd_mol = Chem.MolFromSmiles(smiles)
-        self.rd_mol = Chem.AddHs(self.rd_mol)
+        # self.rd_mol = Chem.MolFromSmiles(smiles)
+        # self.rd_mol = Chem.AddHs(self.rd_mol)
+        # AllChem.EmbedMolecule(self.rd_mol)
+        # AllChem.MMFFOptimizeMolecule(self.rd_mol)
 
         try:
             self.pysmiles_mol = read_smiles(smiles, explicit_hydrogen=True)
@@ -90,15 +93,16 @@ class Molecule:
             else:
                 continue
 
-    @classmethod
-    def from_molfile(cls, file):
-        """
-        :param file: asbolute path to the Mol file
-        :return: Molecule class
-        """
-        mol = Chem.MolFromMolFile(file)
-        smiles = Chem.MolToSmiles(mol)
-        return cls(smiles)
+    """ loading in files is no longer used in this project """
+    # @classmethod
+    # def from_molfile(cls, file):
+    #     """
+    #     :param file: asbolute path to the Mol file
+    #     :return: Molecule class
+    #     """
+    #     mol = Chem.MolFromMolFile(file)
+    #     smiles = Chem.MolToSmiles(mol)
+    #     return cls(smiles)
 
     def set_atom_positions(self, atoms, positions):
         """
@@ -107,8 +111,9 @@ class Molecule:
         :param positions: positions
         :return:
         """
+        # / 0.52917721092
         for atom in atoms:
-            self.atoms[atom].coordinates = np.array([p / 0.52917721092 for p in positions[atom]])
+            self.atoms[atom].coordinates = np.array([p * 1.889725989 for p in positions[atom]])
 
     @property
     def n_electrons(self):
@@ -133,6 +138,13 @@ class Molecule:
                 if a != b:
                     e_nuc += (a.charge * b.charge) / np.linalg.norm(a.coordinates - b.coordinates)
         return 0.5 * e_nuc
+
+    @property
+    def center_of_charge(self):
+        return np.array([sum([atom.charge * atom.coordinates[0] for atom in self.atoms]),
+                         sum([atom.charge * atom.coordinates[1] for atom in self.atoms]),
+                         sum([atom.charge * atom.coordinates[2] for atom in self.atoms])]) * \
+                         (1.0 / sum([atom.charge for atom in self.atoms]))
 
     @functools.lru_cache(maxsize=None)
     def get_nbonds(self, index):
@@ -232,30 +244,31 @@ class Molecule:
 
         return np.arccos(tau) / np.pi * 180
 
-    def get_smart_string(self, atoms, isTorsion):
-        """
-        :param atoms: indices of the atoms
-        :param isTorsion: Bool indicating a torsional term(4 atoms) or not
-        :return: smart string of the molecule fragment, specified by the
-        atoms
-        """
-        nbonds = []
-        for atom in atoms:
-            nbonds.append(len(self.get_bonds(atom)))
-
-        interbonds = MolFragmentToSmarts(self.rd_mol, atoms).replace('(', '').replace(')', '').split(']')
-
-        smarts = ''
-        for i in range(len(atoms)):
-            if i == len(atoms) - 1:
-                end = ''
-            else:
-                end = interbonds[i + 1][0]
-            if (nbonds[i] > 1 and self.atoms[atoms[i]].atom == 6) or (self.atoms[atoms[i]].atom > 1 and isTorsion):
-                smarts += '[#' + str(self.atoms[atoms[i]].atom) + 'X' + str(nbonds[i]) + ':' + str(i + 1) + ']' + end
-            else:
-                smarts += '[#' + str(self.atoms[atoms[i]].atom) + ':' + str(i + 1) + ']' + end
-        return smarts.replace('.', '-')
+    """ ForceFields are no longer being used in this project """
+    # def get_smart_string(self, atoms, isTorsion):
+    #     """
+    #     :param atoms: indices of the atoms
+    #     :param isTorsion: Bool indicating a torsional term(4 atoms) or not
+    #     :return: smart string of the molecule fragment, specified by the
+    #     atoms
+    #     """
+    #     nbonds = []
+    #     for atom in atoms:
+    #         nbonds.append(len(self.get_bonds(atom)))
+    #
+    #     interbonds = MolFragmentToSmarts(self.rd_mol, atoms).replace('(', '').replace(')', '').split(']')
+    #
+    #     smarts = ''
+    #     for i in range(len(atoms)):
+    #         if i == len(atoms) - 1:
+    #             end = ''
+    #         else:
+    #             end = interbonds[i + 1][0]
+    #         if (nbonds[i] > 1 and self.atoms[atoms[i]].atom == 6) or (self.atoms[atoms[i]].atom > 1 and isTorsion):
+    #             smarts += '[#' + str(self.atoms[atoms[i]].atom) + 'X' + str(nbonds[i]) + ':' + str(i + 1) + ']' + end
+    #         else:
+    #             smarts += '[#' + str(self.atoms[atoms[i]].atom) + ':' + str(i + 1) + ']' + end
+    #     return smarts.replace('.', '-')
 
     def iterate_atoms(self, atom, bonds):
         """

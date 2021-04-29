@@ -20,7 +20,7 @@ class HartreeFockProcedure:
         diag_s = np.diag(e_s ** -0.5)
         self.X = np.dot(U, np.dot(diag_s, U.T))
 
-    def run_hf(self, tol, max_steps=100, DIIS=False):
+    def run_hf(self, tol, max_steps=100, DIIS=False, report_iterations=False):
         B = self.basis.n_basis
         # T and V are not affected by the iterative process
         H_core = self.basis.kinetic + self.basis.extern
@@ -28,6 +28,10 @@ class HartreeFockProcedure:
         if DIIS:
             self.fock_set = []
             self.error_set = []
+
+        if report_iterations:
+            self.MO_list = []
+            self.C_list = []
 
         for n in range(max_steps):
 
@@ -53,6 +57,10 @@ class HartreeFockProcedure:
             C_prime = C_prime[:, indices]
             self.C = np.dot(self.X, C_prime)
 
+            if report_iterations:
+                self.MO_list.append(self.E)
+                self.C_list.append(self.C)
+
             self.P_previous = self.P
             self.P = np.zeros((B, B))
             for i in range(B):
@@ -68,6 +76,13 @@ class HartreeFockProcedure:
             self.energy = self.nuc_energy + self.el_energy
 
             if np.linalg.norm(self.P - self.P_previous) < tol:
+                # calculate dipole moments
+                for i in range(3):
+                    self.basis.mu[i] = -2 * np.trace(np.dot(self.P, self.basis.M[i])) + \
+                                     sum([atom.charge * (atom.coordinates[i] -
+                                                         self.mol.center_of_charge[i]) for atom in self.mol.atoms])
+                self.basis.mu *= 2.541765
+
                 break
 
     def toOrthonormal(self, mat):

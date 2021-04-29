@@ -40,10 +40,6 @@ class CgtoBasisSet:
                             coeffs=np.array(shell['coefficients'][l], dtype=float)
                         ))
 
-        # self.coeffs = np.array([bf.coeffs for bf in self.basis_functions])
-        # self.alphas = np.array([bf.exponents for bf in self.basis_functions])
-        # self.R = np.array([get_magnitude(bf.origin) for bf in self.basis_functions]).flatten()
-
         self.B = len(self.basis_functions)
 
         self.S = np.zeros((self.B, self.B), dtype=np.float64)
@@ -51,11 +47,21 @@ class CgtoBasisSet:
         self.V = np.zeros((self.B, self.B), dtype=np.float64)
         self.met = np.zeros((self.B, self.B, self.B, self.B), dtype=np.float64)
 
+        self.M = np.zeros((3, self.B, self.B), dtype=np.float64)
+        self.mu = np.zeros(3)
+
         count = 0
         for i in range(self.B):
             for j in range(i + 1):
                 self.S[i, j] = self.S[j, i] = cgto.S(self.basis_functions[i], self.basis_functions[j])
                 self.T[i, j] = self.T[j, i] = cgto.T(self.basis_functions[i], self.basis_functions[j])
+
+                self.M[0, i, j] = self.M[0, j, i] = cgto.Mu(self.basis_functions[i], self.basis_functions[j],
+                                                            mol.center_of_charge, 'x')
+                self.M[1, i, j] = self.M[1, j, i] = cgto.Mu(self.basis_functions[i], self.basis_functions[j],
+                                                            mol.center_of_charge, 'y')
+                self.M[2, i, j] = self.M[2, j, i] = cgto.Mu(self.basis_functions[i], self.basis_functions[j],
+                                                            mol.center_of_charge, 'z')
 
                 for atom in mol.atoms:
                     self.V[i, j] += -atom.charge * cgto.V(self.basis_functions[i], self.basis_functions[j], atom.coordinates)
@@ -102,6 +108,9 @@ class PreComputedCgtoBasisSet:
         self.met = read_4d_matrix(eri_path)
 
         self.B = self.S.shape[0]
+
+        self.M = np.zeros((3, self.B, self.B), dtype=np.float64)
+        self.mu = np.zeros(3)
 
     @property
     def n_basis(self):

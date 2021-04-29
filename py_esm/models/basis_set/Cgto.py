@@ -285,6 +285,65 @@ def V(Ga : ContractedGaussianOrbital, Gb : ContractedGaussianOrbital, C : np.nda
     return v
 
 
+def dipole(a, ijk, A, b, lmn, B, C, direction):
+    """
+    Calculates the dipole integral
+    :param a: exponent of gaussian 1
+    :param ijk: tuple containing the ang_mom_numbers of gaussian 1
+    :param A: center of gaussian 1
+    :param b: exponent of gaussian 2
+    :param lmn: tuple containing the ang_mom_numbers of gaussian 2
+    :param B: center of gaussian 2
+    :param C: center of the moment ?
+    :param direction: direction of the dipole
+    :return: dipole integral
+    """
+
+    i, j, k = ijk
+    l, m, n = lmn
+
+    P = (a * A + b * B) / (a + b)
+
+    S1 = E(a, b, i, l, 0, A[0] - B[0])
+    S2 = E(a, b, j, m, 0, A[1] - B[1])
+    S3 = E(a, b, k, n, 0, A[2] - B[2])
+
+    if direction.lower() == 'x':
+        Xpc = P[0] - C[0]
+        D = E(a, b, i, l, 1, A[0] - B[0]) + Xpc * E(a, b, i, l, 0, A[0] - B[0])
+        return D * S2 * S3 * np.power(np.pi/(a+b), 1.5)
+    elif direction.lower() == 'y':
+        Ypc = P[1] - C[1]
+        D = E(a, b, j, m, 1, A[1] - B[1]) + Ypc * E(a, b, j, m, 0, A[1] - B[1])
+        return S1 * D * S3 * np.power(np.pi/(a+b), 1.5)
+    elif direction.lower() == 'z':
+        Zpc = P[2] - C[2]
+        D = E(a, b, k, n, 1, A[2] - B[2]) + Zpc * E(a, b, k, n, 0, A[2] - B[2])
+        return S1 * S2 * D * np.power(np.pi/(a+b), 1.5)
+
+
+def Mu(Ga : ContractedGaussianOrbital, Gb : ContractedGaussianOrbital, C : np.ndarray, direction):
+    """
+    Evalues the 2nd order moment (dipole) integral between two CGTO functions
+    :param Ga: ContractedGaussianOrbital 1
+    :param Gb: ContractedGaussianOrbital 2
+    :param C: array containing the nucleus coordinates
+    :param direction: x, y or z
+    :return:
+    """
+
+    mu = 0.0
+    for index1, coef1 in enumerate(Ga.coeffs):
+        for index2, coef2 in enumerate(Gb.coeffs):
+            # print(Ga.norm[index1] * Gb.norm[index2] * coef1 * coef2 * dipole(Ga.exponents[index1], Ga.ang_mom, Ga.origin,
+            #                                                                  Gb.exponents[index2], Gb.ang_mom, Gb.origin,
+            #                                                                  C, direction))
+            mu += Ga.norm[index1] * Gb.norm[index2] * coef1 * coef2 * dipole(Ga.exponents[index1], Ga.ang_mom, Ga.origin,
+                                                                             Gb.exponents[index2], Gb.ang_mom, Gb.origin,
+                                                                             C, direction)
+    return mu
+
+
 def electron_repulsion(a, ijk, A, b, lmn, B, c, xyz, C, d, rst, D):
     """
     Electron repulsion integral

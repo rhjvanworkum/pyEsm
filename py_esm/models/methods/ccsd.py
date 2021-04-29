@@ -6,14 +6,13 @@ from py_esm.models.methods.scf.HartreeFockProcedure import HartreeFockProcedure
 def ccsd_mol(mol, basis):
 
     scf = HartreeFockProcedure(mol, basis)
-    scf.run_hf(25, False)
+    scf.run_hf(1e-12, DIIS=True)
 
     calculator = CCSDEnergyCalculator(mol.n_electrons, scf.basis.n_basis, scf.basis.met)
 
     return scf.E, scf.C, (scf.energy + calculator.calculate(scf.E))
 
 
-# TODO: Test this class more carefully
 class CCSDEnergyCalculator():
 
     def __init__(self, N, dim, multi_electron_tensor):

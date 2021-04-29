@@ -1,5 +1,3 @@
-
-
 # taken from the McMurchie-Davidson repository
 Bragg = [None,
      0.50, 2.00, 1.45, 1.05, 0.85, 0.70, 0.65, 0.60, 0.50,

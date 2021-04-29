@@ -11,7 +11,7 @@ def mp2_mol(mol, basis):
     """
 
     scf = HartreeFockProcedure(mol, basis)
-    scf.run_hf(25, False)
+    scf.run_hf(1e-12, DIIS=True)
 
     calculator = MP2EnergyCalculator(mol.n_electrons, scf.basis.n_basis, scf.basis.met)
 

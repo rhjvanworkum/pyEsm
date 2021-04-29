@@ -1,6 +1,4 @@
 import numpy as np
-from autograd import elementwise_grad
-import autograd.numpy as agnp
 
 def LSDA(rho):
     clda = (3 / 4) * (3.0 / np.pi) ** (1 / 3)
