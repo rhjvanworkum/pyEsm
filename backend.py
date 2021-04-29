@@ -66,6 +66,7 @@ global pes
 
 
 @app.route('/api/set_molecule', methods=['GET'])
+@cross_origin()
 def set_molecule():
     global m
     m = Molecule(request.args['smiles'])
@@ -87,6 +88,7 @@ def set_molecule():
 
 
 @app.route('/api/set_geometry', methods=['POST'])
+@cross_origin()
 def set_geometry():
     global m
 
@@ -106,6 +108,7 @@ def set_geometry():
 
 
 @app.route('/api/view_orbitals', methods=['GET'])
+@cross_origin()
 def view_orbitals():
     global m
 
@@ -162,10 +165,13 @@ def run_job():
     # pes = PESConstructor(m, basis_set, axis, dofs, ff_mol, length, num_axis)
     # pes.loop_through_coordinates(num_axis)
 
-    return jsonify({'message': 'succes'})
+    response = jsonify({'message': 'succes'})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 @app.route('/api/get_slice', methods=['GET'])
+@cross_origin()
 def get_slice():
     global pes
 
