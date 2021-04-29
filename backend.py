@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request
+from flask_cors.decorator import cross_origin
 from itertools import permutations
 import math
 import numpy as np
@@ -63,11 +64,6 @@ global m
 global pes
 
 
-@app.route('/api/', methods=['GET'])
-def index():
-    return Response("Hello World")
-
-
 @app.route('/api/set_molecule', methods=['GET'])
 def set_molecule():
     global m
@@ -83,7 +79,10 @@ def set_molecule():
         'bond_orders': m.bond_orders,
         'dofs': dof
     }
-    return jsonify(message)
+
+    response = jsonify(message)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 @app.route('/api/set_geometry', methods=['POST'])
@@ -100,7 +99,9 @@ def set_geometry():
         'atoms': [[a.atom, a.coordinates.tolist()] for a in m.atoms],
     }
 
-    return jsonify(message)
+    response = jsonify(message)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 @app.route('/api/view_orbitals', methods=['GET'])
@@ -132,10 +133,13 @@ def view_orbitals():
                 [np.max(bf_pos_x), np.max(bf_pos_y), np.max(bf_pos_z)]]
     }
 
-    return jsonify(message)
+    response = jsonify(message)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 @app.route('/api/run_job', methods=['POST'])
+@cross_origin()
 def run_job():
     global m, pes
 
@@ -159,9 +163,6 @@ def run_job():
 
     return jsonify({'message': 'succes'})
 
-    # output = pes.data
-    #
-    # return json.dumps({'output': output}, cls=NumpyEncoder)
 
 @app.route('/api/get_slice', methods=['GET'])
 def get_slice():
@@ -172,7 +173,9 @@ def get_slice():
 
     data = pes.get_slice(indices, values)
 
-    return json.dumps({'output': data}, cls=NumpyEncoder)
+    response = jsonify(json.dumps({'output': data}, cls=NumpyEncoder))
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 if __name__ == '__main__':
