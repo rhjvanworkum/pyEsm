@@ -15,7 +15,7 @@ from py_esm.models.methods.dft import dft_mol
 # from py_esm.models.methods.ff import ff_mol
 
 app = Flask(__name__)
-cors = CORS(app)
+CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 def unique(list, len):
