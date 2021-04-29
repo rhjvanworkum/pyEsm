@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from flask_cors.decorator import cross_origin
+from flask_cors import CORS, cross_origin
 from itertools import permutations
 import math
 import numpy as np
@@ -15,7 +15,8 @@ from py_esm.models.methods.dft import dft_mol
 # from py_esm.models.methods.ff import ff_mol
 
 app = Flask(__name__)
-
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 def unique(list, len):
     dict = []
