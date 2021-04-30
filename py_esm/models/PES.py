@@ -41,10 +41,8 @@ class PESConstructor:
                 coordinate = self.axis[index][value]
                 self.m.set_geometry(coordinate, self.dofs[index])
 
-            # basis = CgtoBasisSet(self.m, self.basis)
-            # basis
-            # E, C,
-            energy = self.method(self.m)
+            basis = CgtoBasisSet(self.m, self.basis)
+            E, C, energy = self.method(self.m, basis)
 
             self.set_value_in_output_array(energy)
 
@@ -58,10 +56,12 @@ class PESConstructor:
         axis = self.output_array.reshape(self.dimensions)
 
         for idx, val in enumerate(values):
+            print(axis)
             if idx not in indices:
                 axis = axis[val]
             else:
                 axis = axis[:]
+            print(axis)
 
         return axis
 

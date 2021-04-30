@@ -5,10 +5,12 @@ The focus for this project was therefore more so about learning and not so much 
 
 #### Installation
 Installation is recommended through Conda:
+- Make sure you have a working installation of openbabel on your computer
 - Git clone the pyEsm project
 - Inside pyEsm, type: 'conda env create -f environment.yml'
 - next: 'conda activate pyEsmFinal'
 - run 'pytest' in the terminal, to see if the environment creation was succesfull
+- run: 'python backend.py' to start the Flask server
 
 #### Molecules
 Energy calculations can be performed on Molecule objects, which can be initiated using a SMILES string. 

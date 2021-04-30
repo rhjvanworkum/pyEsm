@@ -5,6 +5,8 @@ dependencies:
       - scipy
       - numpy
       - flask
+      - requests
+      - flask_apscheduler
       - pysmiles
       - pytest
   - conda:

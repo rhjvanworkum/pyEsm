@@ -148,8 +148,9 @@ def view_orbitals():
 @app.route('/api/run_job', methods=['POST'])
 @cross_origin()
 def run_job():
-    global m, pes
+    global m, pes, done
 
+    done = False
     data = request.json
 
     num_axis = len(data['axis'])
@@ -163,7 +164,10 @@ def run_job():
         axis.append(np.linspace(data['axis'][i]['min'], data['axis'][i]['max'], length[i]))
         dofs.append(data['axis'][i]['dof'])
 
-    pes = PESConstructor(m, data['basis'], axis, dofs, methods_dict[data['method']], length, num_axis)
+    basis = data['basis']
+    method = methods_dict[data['method']]
+
+    pes = PESConstructor(m, basis, axis, dofs, method, length, num_axis)
     pes.loop_through_coordinates(num_axis)
 
     response = jsonify({'message': 'succes'})
@@ -181,9 +185,7 @@ def get_slice():
 
     data = pes.get_slice(indices, values)
 
-    response = jsonify(json.dumps({'output': data}, cls=NumpyEncoder))
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    return response
+    return json.dumps({'output': data}, cls=NumpyEncoder)
 
 
 if __name__ == '__main__':
