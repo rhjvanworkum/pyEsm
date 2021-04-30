@@ -1,3 +1,7 @@
+"""
+This File is used to serve the pyEsm module for the front-end on CodingChemistry.com
+"""
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from itertools import permutations
@@ -12,7 +16,6 @@ from py_esm.models.methods.hartree_fock import hf_mol, hf_mol_iterated
 from py_esm.models.methods.mp2 import mp2_mol
 from py_esm.models.methods.ccsd import ccsd_mol
 from py_esm.models.methods.dft import dft_mol
-# from py_esm.models.methods.ff import ff_mol
 
 app = Flask(__name__)
 CORS(app)
@@ -160,10 +163,8 @@ def run_job():
         axis.append(np.linspace(data['axis'][i]['min'], data['axis'][i]['max'], length[i]))
         dofs.append(data['axis'][i]['dof'])
 
-    basis_set = 'sto-3g'
-    # methods_dict[data['method']]
-    # pes = PESConstructor(m, basis_set, axis, dofs, ff_mol, length, num_axis)
-    # pes.loop_through_coordinates(num_axis)
+    pes = PESConstructor(m, data['basis'], axis, dofs, methods_dict[data['method']], length, num_axis)
+    pes.loop_through_coordinates(num_axis)
 
     response = jsonify({'message': 'succes'})
     response.headers.add("Access-Control-Allow-Origin", "*")

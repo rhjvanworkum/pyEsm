@@ -3,7 +3,6 @@ import requests
 import json
 
 from py_esm.utils.data import read_2d_matrix, read_4d_matrix
-from py_esm.utils.linalg import get_magnitude
 from py_esm.utils.linalg import get_4d_matrix_index
 from py_esm.utils.orbitals import ang_mom_dict
 import py_esm.models.basis_set.Cgto as cgto

@@ -63,7 +63,6 @@ class Molecule:
             self.bonds.append(bond[:-1])
             self.bond_orders.append(bond[2])
 
-        # TODO: do not add every possible angle to the molecule data object
         self.angles = []
         for i in range(self.natoms):
             bonds = self.get_bonds(i)
@@ -93,7 +92,7 @@ class Molecule:
             else:
                 continue
 
-    """ loading in files is no longer used in this project """
+    """ commented this out because of the rdkit dependecy """
     # @classmethod
     # def from_molfile(cls, file):
     #     """
